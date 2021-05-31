@@ -1,0 +1,85 @@
+version: '3.7'
+services:
+    redis:
+        image: 'redis:5.0.5'
+        command: redis-server --requirepass redispass
+
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        # Uncomment these lines to persist data on the local filesystem.
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - ./.pgdata:/var/lib/postgresql/data/pgdata
+
+    webserver:
+        build:
+            context: .
+        restart: always
+        depends_on:
+            - postgres
+            - redis
+        environment:
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - EXECUTOR=Celery
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - REDIS_PASSWORD=redispass
+            - SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://airflow:airflow@postgres/airflow
+        volumes:
+            - ./dags:/opt/airflow/dags
+            # Uncomment to include custom plugins
+            - ./plugins:/opt/airflow/plugins
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    scheduler:
+        build:
+            context: .
+        restart: always
+        depends_on:
+            - webserver
+        volumes:
+            - ./dags:/opt/airflow/dags
+            # Uncomment to include custom plugins
+            - ./plugins:/opt/airflow/plugins
+        environment:
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - EXECUTOR=Celery
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - REDIS_PASSWORD=redispass
+            - SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://airflow:airflow@postgres/airflow
+        command: scheduler
+
+    worker:
+        build:
+            context: .
+        restart: always
+        depends_on:
+            - scheduler
+        volumes:
+            - ./dags:/opt/airflow/dags
+            # Uncomment to include custom plugins
+            - ./plugins:/opt/airflow/plugins
+        environment:
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - EXECUTOR=Celery
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - REDIS_PASSWORD=redispass
+            - SQLALCHEMY_DATABASE_URI=postgresql+psycopg2://airflow:airflow@postgres/airflow
+        command: celery worker
