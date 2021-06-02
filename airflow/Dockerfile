@@ -1,4 +1,5 @@
-FROM apache/airflow:1.10.14
+ARG AIRFLOW_VERSION=1.10.14
+FROM apache/airflow:${AIRFLOW_VERSION}
 
 USER root
 RUN apt-get update \

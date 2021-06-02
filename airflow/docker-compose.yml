@@ -17,8 +17,7 @@ services:
             - ./.pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        build:
-            context: .
+        image: airflow:1.10.14
         restart: always
         depends_on:
             - postgres
@@ -45,8 +44,7 @@ services:
             retries: 3
 
     scheduler:
-        build:
-            context: .
+        image: airflow:1.10.14
         restart: always
         depends_on:
             - webserver
@@ -65,8 +63,7 @@ services:
         command: scheduler
 
     worker:
-        build:
-            context: .
+        image: airflow:1.10.14
         restart: always
         depends_on:
             - scheduler

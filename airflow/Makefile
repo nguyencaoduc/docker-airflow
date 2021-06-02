@@ -1,5 +1,7 @@
+AIRFLOW_VERSION = 1.10.14
+
 build:
-	docker compose build
+	docker build -t airflow:${AIRFLOW_VERSION} --build-arg AIRFLOW_VERSION=${AIRFLOW_VERSION} .
 
 init:
 	docker compose run webserver db init
