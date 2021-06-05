@@ -4,6 +4,7 @@ build:
 	docker build -t airflow:${AIRFLOW_VERSION} --build-arg AIRFLOW_VERSION=${AIRFLOW_VERSION} .
 
 init:
+	mkdir -p .pgdata
 	docker compose run webserver db init
 	docker compose run webserver users create --username admin --firstname Admin --lastname Adm --role Admin --email admin@example.com
 
