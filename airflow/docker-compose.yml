@@ -14,10 +14,10 @@ services:
         # Uncomment these lines to persist data on the local filesystem.
             - PGDATA=/var/lib/postgresql/data/pgdata
         volumes:
-            - ./.pgdata:/var/lib/postgresql/data/pgdata
+            - ./.pgdata-${AIRFLOW_VERSION}:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: airflow:1.10.14
+        image: airflow:${AIRFLOW_VERSION}
         restart: always
         depends_on:
             - postgres
@@ -44,7 +44,7 @@ services:
             retries: 3
 
     scheduler:
-        image: airflow:1.10.14
+        image: airflow:${AIRFLOW_VERSION}
         restart: always
         depends_on:
             - webserver
@@ -63,7 +63,7 @@ services:
         command: scheduler
 
     worker:
-        image: airflow:1.10.14
+        image: airflow:${AIRFLOW_VERSION}
         restart: always
         depends_on:
             - scheduler
